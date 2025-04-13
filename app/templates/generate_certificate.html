@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PKI Management - Generate Certificate</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">PKI Management</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('certificates') }}">Certificates</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('generate_certificate') }}">Generate Certificate</a>
+                    </li>
+                    {% if current_user.username == 'admin' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('list_users') }}">Users</a>
+                    </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1>Generate New Certificate</h1>
+        
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-info">
+            {% for message in messages %}
+            {{ message }}
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Certificate Details</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('generate_certificate') }}">
+                            <div class="mb-3">
+                                <label for="cert_type" class="form-label">Certificate Type</label>
+                                <select class="form-select" id="cert_type" name="cert_type" required>
+                                    <option value="user">User Certificate</option>
+                                    <option value="service">Service Certificate</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="common_name" class="form-label">Common Name (CN)</label>
+                                <input type="text" class="form-control" id="common_name" name="common_name" required>
+                                <div class="form-text">
+                                    For users: your name or username<br>
+                                    For services: the FQDN of the service (e.g., service.company.com)
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Generate Certificate</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Information</h3>
+                    </div>
+                    <div class="card-body">
+                        <h5>Certificate Usage</h5>
+                        <p>User certificates are used for:</p>
+                        <ul>
+                            <li>Authentication to services</li>
+                            <li>Digital signatures</li>
+                            <li>Email encryption</li>
+                        </ul>
+                        <p>Service certificates are used for:</p>
+                        <ul>
+                            <li>Server authentication</li>
+                            <li>Secure communication between services</li>
+                            <li>API authentication</li>
+                        </ul>
+                        <hr>
+                        <h5>Security Note</h5>
+                        <p>
+                            After generation, you'll receive a zip file containing your certificate and private key.
+                            Keep your private key secure - it should never be shared.
+                            For user certificates, we recommend storing them on a YubiKey or other secure hardware token.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+services:
+  ca:
+    container_name: pki-ca
+    build:
+      context: ./ca
+      dockerfile: Dockerfile
+    volumes:
+      - ca_data:/easyrsa
+    networks:
+      - pki_network
+
+  db:
+    container_name: pki-db
+    image: postgres:13
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=pki
+      - POSTGRES_USER=pki_user
+      - POSTGRES_PASSWORD=secure_password
+    networks:
+      - pki_network
+
+  app:
+    container_name: pki-app
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    volumes:
+      - app_data:/app/data
+      - ca_data:/ca
+    depends_on:
+      - db
+      - ca
+    networks:
+      - pki_network
+    environment:
+      - DB_HOST=db
+      - DB_NAME=pki
+      - DB_USER=pki_user
+      - DB_PASSWORD=secure_password
+      - CA_PATH=/ca
+    restart: on-failure
+
+  proxy:
+    container_name: pki-proxy
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
+    ports:
+      - "8443:443"
+    volumes:
+      - proxy_certs:/etc/nginx/certs
+      - ca_data:/ca:ro
+    depends_on:
+      - app
+    networks:
+      - pki_network
+
+volumes:
+  ca_data:
+  app_data:
+  proxy_certs:
+  db_data:
+
+networks:
+  pki_network:
+    driver: bridge
